@@ -1,6 +1,7 @@
 # summarize.py
 import os
 import json
+import torch
 from datetime import datetime
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 
@@ -27,11 +28,15 @@ def load_latest_raw():
         data = json.load(f)
     return data.get("results", []), files[0].split("_")[1].split(".")[0]  # returns EOs + date string
 
+import torch
+
 def initialize_model():
     model_id = "tiiuae/falcon-rw-1b"
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     model = AutoModelForCausalLM.from_pretrained(model_id)
-    return pipeline("text-generation", model=model, tokenizer=tokenizer)
+    device = 0 if torch.cuda.is_available() else -1
+    print(f"Using {'GPU' if device == 0 else 'CPU'} for generation.")
+    return pipeline("text-generation", model=model, tokenizer=tokenizer, device=device)
 
 def style_patch_note(eo, summarizer):
     raw_text = eo.get("summary", eo.get("title", ""))
