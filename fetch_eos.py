@@ -1,12 +1,17 @@
 # fetch_eos.py
-import requests
+import requests # type: ignore
 import os
 import json
 import sys
+import time
 from datetime import datetime
 
 FED_REG_LIST_API = "https://www.federalregister.gov/api/v1/documents.json"
 FED_REG_DETAIL_API = "https://www.federalregister.gov/api/v1/documents/{}.json"
+
+HEADERS = {
+    "User-Agent": "USAPatchNotesBot/1.0 (https://github.com/carmichaei/USAPatchNotes)"
+}
 
 def fetch_eos_for_date(target_date):
     eos = []
@@ -19,7 +24,7 @@ def fetch_eos_for_date(target_date):
             "presidential_document_type": "executive_order",
             "publication_date[]": target_date
         }
-        response = requests.get(FED_REG_LIST_API, params=params)
+        response = requests.get(FED_REG_LIST_API, params=params, headers=HEADERS)
         if response.status_code != 200:
             raise Exception(f"Failed to fetch list data: {response.status_code}")
         data = response.json()
@@ -31,17 +36,18 @@ def fetch_eos_for_date(target_date):
             document_number = item.get("document_number")
             if document_number:
                 detail_url = FED_REG_DETAIL_API.format(document_number)
-                detail_resp = requests.get(detail_url)
+                detail_resp = requests.get(detail_url, headers=HEADERS)
                 if detail_resp.status_code == 200:
                     detail_data = detail_resp.json()
                     item["full_text_html"] = detail_data.get("body_html")
                     item["full_text_xml"] = detail_data.get("body_xml")
-        
-        eos.extend(results)
+                time.sleep(0.5)  # prevent rate limiting on detail fetches
 
+        eos.extend(results)
         if not data.get("next_page_url"):
             break
         page += 1
+        time.sleep(1)  # prevent rate limiting on page fetches
 
     return eos
 

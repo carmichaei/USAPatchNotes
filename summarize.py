@@ -1,7 +1,6 @@
 # summarize.py
 import os
 import json
-import torch
 from datetime import datetime
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 
@@ -28,7 +27,7 @@ def load_latest_raw():
         data = json.load(f)
     return data.get("results", []), files[0].split("_")[1].split(".")[0]  # returns EOs + date string
 
-import torch
+import torch # type: ignore
 
 def initialize_model():
     model_id = "tiiuae/falcon-rw-1b"
