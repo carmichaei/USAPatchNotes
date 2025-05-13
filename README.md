@@ -19,7 +19,7 @@ _Game-style patch notes for America._
 
 ## Getting Started
 ```bash
-git clone https://github.com/YOUR_USERNAME/USAPatchNotes.git
+git clone https://github.com/carmichaei/USAPatchNotes.git
 cd USAPatchNotes
 pip install -r requirements.txt
 python src/fetch_eos.py
